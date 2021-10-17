@@ -1,0 +1,301 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[justification=centering]{caption}
+\usepackage[catalan]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{pythontex}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage[table,xcdraw]{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\DisableLigatures{encoding = *, family = *}
+
+\geometry{left=25mm, right=25mm, top=25mm, bottom=25mm}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Joel, Jordi, i Oriol}
+\rhead{Aprenentatge Computacional}
+\cfoot{\thepage}
+
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\footrulewidth}{0.6pt}
+\renewcommand{\baselinestretch}{1.5}
+\setlength{\headheight}{13.6pt}
+
+\title{\Huge{\textbf{Pràctica 2: Etiquetatge de roba}}}
+\author{\Large{Joel Guevara Lopez, 1564581}
+        \\\Large{Jordi Morales Casas, 1564921}
+        \\\Large{Oriol Benítez Bravo, 1566931}}
+\date{Aprenentatge Computacional, III MatCAD\\ \vspace{6pt} Octubre 2021}
+
+
+\begin{document}
+
+    \maketitle
+
+    \section{Descripció de la base de dades}
+
+    La nostra base de dades consisteix en un recull de valors que ens dona tota la informació sobre
+    diferents característiques d'un cotxe utilitzant dos tipus de combustible.
+
+    Les característiques que ens donen, s'agrupen en distància, consum, velocitat, temperatura dins
+    del cotxe, temperatura fora del cotxe, característiques especials, tipus de combustible, si té
+    activat o no l'aire condicionat, si plou o no, si fa Sol o no, si ha fet provisió de gasolina
+    durant el trajecte i quin tipus de gas s'ha provisió de.
+
+    En el primer anàlisi de les dades, han sigut eliminades les columnes de característiques
+    especials, ja que no aporta informació (només repeteix la informació de la pluja i del Sol) i el
+     tipus de gas fet provisió de, ja que és el mateix que en la columna de tipus de combustible.
+
+    Després d'aquest primer anàlisis, s'ha conclòs a utilitzar com a variable a predir el consum que
+     el cotxe ha realitzat en un trajecte, pel fet que és l'única variable que ens aporta una
+     informació rellevant sobre el vehicle i que ens pot ajudar a decidir sobre el que ens ajuda o
+     no a tenir menys despeses.
+
+    Com que el consum no té relació amb si s'ha o no fet provisió de gasolina, ja que no coneixem
+    quants litres hi havia inicialment, s'ha eliminat de l'anàlisi.
+
+    S'ha considerat crear la variable temps a partir dels valors de distància i velocitat, ja que
+    probablement té alguna relació amb el consum.
+
+    Un cop preparada la base de dades, s'han emplenat els valors buits amb la mitjana dels valors
+    que hi ha en aquella columna i s'han passat a binari els valors referents al tipus de gas.
+    D'aquesta manera, totes les dades tenen valors numèrics.
+
+    \subsection{Correlació de les variables}
+
+    Inicialment, les variables tenen una correlació molt baixa amb la variable consum (figura \ref{fig:C_I}).
+
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=1]{correlacions_inicials.png}
+        \caption{Correlacions inicials de les variables de la base de dades.}
+        \label{fig:C_I}
+    \end{figure}
+
+    Per poder predir, necessitem una correlació més gran, per aconseguir-ho serà necessari aplicar
+    transformacions a les dades per poder aconseguir trobar valors més correlacionals.
+
+    Primerament observem que els histogrames de les correlacions es poden veure característiques en
+    les quals els valors estan molt concentrats en molt poc espai, per tant una transformació útil
+    pot ser aplicar un 1/valor en aquests casos (figura \ref{fig:H_I}). Es pot observar que les
+    variables distancia i velocitat haurien de comportar-se millor amb la transformació prèviament
+    esmentada.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.25]{histogrames_inicials.png}
+        \caption{Histogrames dels valors inicials de les variables de la base de dades.}
+        \label{fig:H_I}
+    \end{figure}
+
+    Es por observar en les gràfiques de distribució de les variables que nomes podem assegurar que
+    segueixin una distribució gaussiana les variables consum, velocitat, temperatura a dins i
+    temperatura a fora.
+
+    Podem observar en les taules de correlacions amb la transformació (figura \ref{fig:C_T}) que la
+    millora és gran, i per tant podem aprofitar aquesta millora per poder decidir quines
+    característiques ens ajudaran a poder generar la regressió.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=1]{correlacions_transformades.png}
+        \caption{Correlacions amb les transformacions de les variables de la base de dades.}
+        \label{fig:C_T}
+    \end{figure}
+
+    És observable que les variables que sembla que poden ser més útils per poder fer una regressió
+    seran: la distancia, la velocitat, la pluja i el temps.
+
+
+    Podem observar en els histogrames (figura \ref{fig:H_T}) que la distribució en aquestes variables,
+    ha sigut millorada i s'han dispersat de forma uniforme els valors, facilitant la correlació.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.25]{histogrames_transformats.png}
+        \caption{Histogrames dels valors transformats de les variables de la base de dades.}
+        \label{fig:H_T}
+    \end{figure}
+
+
+
+
+
+\newpage
+    \section{Avaluació de la importància dels diferents atributs}
+
+
+        Per començar a fer regressió sobre les dades cal decidir amb quines característiques ens
+        quedem i quines podem descartar. Aquest pas és essencial perquè les conclusions finals
+        dependran de les decisions que prenem en aquest punt de l'anàlisi.
+
+        Un primer mètode per avaluar com són de rellevants els diferents atributs pot ser fer una
+        regressió lineal molt simple per cadascun i calcular l'error quadràtic mig (\textit{MSE})
+        que donen els diferents models.
+        Recordem que aquest error és un estimador de la diferència mitjana al quadrat entre la
+        predicció del model i el valor que realment té, i es calcula seguint aquesta fórmula:
+        \begin{gather*}
+          MSE = \frac{1}{n}\sum_{i=1}^n (\hat{Y}_i - Y_i)^2
+        \end{gather*}
+
+
+        Si provem això amb el nostre \textit{dataset} obtenim els resultats següents:\\
+
+        \begin{table}[H]
+            \centering
+            \begin{tabular}{lllllllll}
+                \hline
+                \multicolumn{1}{|l|}{\textbf{Dist.}} & \multicolumn{1}{l|}{\textbf{Vel.}} & \multicolumn{1}{l|}{\textbf{Tª int.}} & \multicolumn{1}{l|}{\textbf{Tª ext.}} & \multicolumn{1}{l|}{\textbf{Tipus combust.}} & \multicolumn{1}{l|}{\textbf{AC}} & \multicolumn{1}{l|}{\textbf{Pluja}} & \multicolumn{1}{l|}{\textbf{Sol}} & \multicolumn{1}{l|}{\textbf{Temps}} \\ \hline
+                0.5405                                   & 0.5783                                  & 0.6388                                & 0.5471                                & 0.6050                                   & 0.6002                           & 0.5890                              & 0.6243                            & 0.5209
+            \end{tabular}
+        \end{table}
+
+
+        L'atribut amb menor MSE, $0.5209$, és el temps. Això és interessant, ja que aquest atribut
+        es deriva de la distància i la velocitat, que tenen $0.5405$ i $0.5783$ respectivament. La
+        temperatura exterior també a donat un dels errors més baixos mentre que la interior sembla
+        ser l’atribut menys útil, però en general tots els errors són força semblants. Cal
+        preguntar-se si potser descartar atributs sense tenir en compte com poden estar relacionats
+        entre si és bona idea pel nostre cas concret.\\
+
+
+        Per tal de trobar quins són els atributs més importants hem fet servir un mètode de backward
+        selection: Començant amb el model sencer, fem un seguit de regressions eliminant cada cop
+        l'atribut que menys informació aporti. Per prendre aquesta decisió ens fixem en el p-value
+        associat a cadascun. Un p-value molt gran ens indica que no és estadísticament significant
+        pel model i per tant podem prescindir d'aquest atribut. Deixem d’eliminar variables quan
+        tots els p-values siguin prou baixos (normalment menor que $0.05$).\\
+
+        La taula següent mostra aquest procés d'eliminació, fila per fila. Cal dir que els valors
+        que apareixem com 0 en realitat si tenen un valor, però surt de la precisió que mostra la
+        llibreria.
+        En qualsevol cas no afecta al resultat final donat que busquem precisament els valors més
+        grans.\\
+
+
+        \begin{table}[H]
+            \centering
+            \begin{tabular}{|l|l|l|l|l|l|l|l|l|}
+                \hline
+                \textbf{Dist.} & \textbf{Vel.}            & \textbf{Tª int.} & \textbf{Tª ext.} & \textbf{Tipus combust.}  & \textbf{AC} & \textbf{Pluja} & \textbf{Sol}                        & \textbf{Temps} \\ \hline
+                0.000              & 0.966                    & 0.357                               & 0.000                              & 0.314                    & 0.128                         & 0.001          & 0.520                    & 0.079          \\ \hline
+                0.000              & \cellcolor[HTML]{C0C0C0} & 0.354                               & 0.000                              & 0.313                    & 0.125                         & 0.001          & 0.518                    & 0.012          \\ \hline
+                0.000              & \cellcolor[HTML]{C0C0C0} & 0.316                               & 0.000                              & 0.316                    & 0.125                         & 0.001          & \cellcolor[HTML]{C0C0C0} & 0.011          \\ \hline
+                0.000              & \cellcolor[HTML]{C0C0C0} & 0.353                               & 0.000                              & \cellcolor[HTML]{C0C0C0} & 0.147                         & 0.001          & \cellcolor[HTML]{C0C0C0} & 0.009          \\ \hline
+                0.000              & \cellcolor[HTML]{C0C0C0} & \cellcolor[HTML]{C0C0C0}            & 0.000                              & \cellcolor[HTML]{C0C0C0} & 0.208                         & 0.001          & \cellcolor[HTML]{C0C0C0} & 0.009          \\ \hline
+                0.000              & \cellcolor[HTML]{C0C0C0} & \cellcolor[HTML]{C0C0C0}            & 0.000                              & \cellcolor[HTML]{C0C0C0} & \cellcolor[HTML]{C0C0C0}      & 0.000          & \cellcolor[HTML]{C0C0C0} & 0.007          \\ \hline
+            \end{tabular}
+        \end{table}
+
+        Després de repetir aquest procés 6 vegades, obtenim que els atributs més rellevants són la
+        distància (\textit{distance}), la temperatura a l'exterior (\textit{temp\_outside}), si
+        plou o no (\textit{rain}) i el temps del recorregut (\textit{time}).\\
+
+
+        Amb aquesta configuració, si fem un model lineal que segueixi la fórmula
+        \begin{gather*}
+          Consume \sim Distance + Temp\_Outside + Rain + Time
+        \end{gather*}
+        es pot observar en la sortida de la execució (imatge \ref{fig:R_L}) els p-values associats
+        i a sota l'R2 Score de 0.669054, que és una mesura directa de la precisió ($66.9054\%$).
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[scale=0.75]{SalidaModeloLineal.png}
+            \caption{Resultats de la regressió lineal.}
+            \label{fig:R_L}
+        \end{figure}
+
+        Per tal de intentar millorar aquest resultat pasem a un model polinomial, de grau 2, amb la
+        fórmula
+        \begin{gather*}
+          Consume \sim Distance + Temp\_Outside + Temp\_Outside^2 + Rain + Rain^2 + Time + Time^2
+        \end{gather*}
+
+        Hem decidit no incluir l'atribut \textit{Distance} elevat al quadrat degut a que dona pitjor
+        resultat que si no s'inclou (Tot i que continuaria sent millor que el model lineal). Ara,
+        com es pot veure a la sortida del programa (imatge \ref{fig:R_L}), la precisió puja fins al
+        $71.2489\%$.
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[scale=0.75]{SalidaModeloPolinomial.png}
+            \caption{Resultats de la regressió polinomial.}
+            \label{fig:R_L}
+        \end{figure}
+
+
+
+        \paragraph{4. Com influeix la normalització en la regressió?}
+        Es pot aplicar la normalització sobre el model generat, però no obtenim millores en el
+        resultat. Per normalitzar s'aplica la següent equació:
+
+        \begin{equation}
+            \frac{x-\overline{x}}{\sigma}
+        \end{equation}
+        on \texttt{x} són tots els valors del \textit{dataset}. Aquesta formula centralitza les
+        dades a la mitja.
+
+
+        \paragraph{6. Si s'aplica un PCA, a quants components es redueix l'espai? Per què?}
+
+    \section{Descens del gradient}
+        \paragraph{Com influeixen tots els paràmetres en el procés de descens? Quins valors de
+        learning rate convergeixen més ràpid a la solució òptima? Com influeix la inicialització
+        del model en el resultat final?}
+
+
+        \paragraph{Quines funcions polinomials (de diferent grau, de diferents combinacions
+        d'atributs, ...) heu escollit per ser apreses amb el vostre descens del gradient? quina ha
+        donat el millor resultat (en error i rapidesa en convergència)?}
+
+        \paragraph{Utilitzeu el regularitzador en la fòrmula de funció de cost i descens del
+        gradient i proveu polinomis de diferent grau. Com afecta el valor del regularitzador?}
+
+        \paragraph{Quina diferència (quantitativa i qualitativa) hi ha entre el vostre regressor
+        i el de la llibreria?}
+
+        \paragraph{Té sentit el model (polinomial) trobat quan es visualitza sobre les dades?}
+
+        \paragraph{Ajuda la visualització a identificar aquelles mostres per a les que el regressor
+        obté els pitjors resultats de predicció?}
+
+\end{document}
